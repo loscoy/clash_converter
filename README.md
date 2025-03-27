@@ -25,18 +25,39 @@ yarn build
 yarn start
 ```
 
+## PM2 部署
+
+本项目使用 PM2 进行进程管理和部署。以下是 PM2 相关的命令：
+
+```bash
+# 使用 PM2 启动应用
+yarn deploy
+```
+
+### PM2 配置说明
+
+PM2 配置文件 `ecosystem.config.js` 包含以下主要配置：
+
+- `name`: 应用名称
+- `script`: 启动脚本路径
+- `instances`: 实例数量（设置为1）
+- `autorestart`: 自动重启
+- `watch`: 文件监视（生产环境关闭）
+- `max_memory_restart`: 内存限制（100M）
+- `env`: 环境变量配置
+
 ## 使用方法
 
-1. 确保 X-UI 面板正在运行，并且可以通过 `http://localhost:54321` 访问
+1. 确保 X-UI 面板正在运行，并且可以通过 `http://host:port` 访问
 2. 启动本服务器
-3. 访问 `http://localhost:3000/output.yaml` 获取 Clash 配置
+3. 访问 `http://host:6060/clash` 获取 Clash 配置
 
 ## 环境变量
 
-- `PORT`: 服务器端口号（默认：3000）
+- `PORT`: 服务器端口号（默认：6060）
 
 ## 注意事项
 
 - 确保 X-UI 面板的 API 地址正确配置
 - 确保有足够的权限访问 X-UI API
-- 建议在生产环境中使用 HTTPS 
+- 建议在生产环境中使用 HTTPS
