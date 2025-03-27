@@ -115,6 +115,10 @@ export class AuthService {
           validateStatus: (status) => status === 200,
         });
 
+        const url = new URL(serverConfig.apiUrl);
+        const domain = url.hostname;
+        const obj = response.data.obj;
+
         if (response.data && response.data.success === false && response.data.msg === '登录时效已过，请重新登录') {
           console.log(`服务器 ${serverConfig.apiUrl} 登录已过期，尝试重新登录...`);
           await this.login(serverConfig);
@@ -136,11 +140,8 @@ export class AuthService {
             },
           });
 
-          const url = new URL(serverConfig.apiUrl);
-          const domain = url.hostname;
-
           // 确保 retryResponse.data 是数组
-          const inboundData = Array.isArray(retryResponse.data) ? retryResponse.data : [];
+          const inboundData = Array.isArray(obj) ? obj : [];
           
           // 为每个入站配置添加域名
           const inboundsWithDomain = inboundData.map(inbound => ({
@@ -150,11 +151,8 @@ export class AuthService {
 
           allInbounds.push(...inboundsWithDomain);
         } else {
-          const url = new URL(serverConfig.apiUrl);
-          const domain = url.hostname;
-
           // 确保 retryResponse.data 是数组
-          const inboundData = Array.isArray(response.data) ? response.data : [];
+          const inboundData = Array.isArray(obj) ? obj : [];
           
           // 为每个入站配置添加域名
           const inboundsWithDomain = inboundData.map(inbound => ({
