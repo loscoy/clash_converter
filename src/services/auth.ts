@@ -139,21 +139,29 @@ export class AuthService {
           const url = new URL(serverConfig.apiUrl);
           const domain = url.hostname;
 
-          const obj = {
-            ...retryResponse.data.obj,
-            'domain': domain
-          }
+          // 确保 retryResponse.data 是数组
+          const inboundData = Array.isArray(retryResponse.data) ? retryResponse.data : [];
+          
+          // 为每个入站配置添加域名
+          const inboundsWithDomain = inboundData.map(inbound => ({
+            ...inbound,
+            domain: domain
+          }));
 
-          allInbounds.push(...obj || []);
+          allInbounds.push(...inboundsWithDomain);
         } else {
           const url = new URL(serverConfig.apiUrl);
           const domain = url.hostname;
 
-          const obj = {
-            ...response.data.obj,
-            'domain': domain
-          }
-          allInbounds.push(...obj || []);
+          // 确保 retryResponse.data 是数组
+          const inboundData = Array.isArray(response.data) ? response.data : [];
+          
+          // 为每个入站配置添加域名
+          const inboundsWithDomain = inboundData.map(inbound => ({
+            ...inbound,
+            domain: domain
+          }));
+          allInbounds.push(...inboundsWithDomain || []);
         }
       } catch (error) {
         console.error(`获取服务器 ${serverConfig.apiUrl} 节点列表失败:`, error);

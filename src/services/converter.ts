@@ -33,8 +33,14 @@ export class ConverterService {
     const streamSettings = JSON.parse(inbound.streamSettings);
     const client = settings.clients[0];
     
+    // 使用 inbound.domain 或 inbound.listen，如果都没有则抛出错误
+    const serverAddress = inbound.domain;
+    if (!serverAddress) {
+      throw new Error('服务器地址未定义，需要 domain 或 listen 字段');
+    }
+    
     // 根据协议构建基本链接
-    let link = `${inbound.protocol}://${client.id}@${inbound.domain || '127.0.0.1'}:${inbound.port}`;
+    let link = `${inbound.protocol}://${client.id}@${serverAddress}:${inbound.port}`;
     
     // 添加参数
     const params = new URLSearchParams();
