@@ -34,7 +34,7 @@ export class ConverterService {
     const client = settings.clients[0];
     
     // 根据协议构建基本链接
-    let link = `${inbound.protocol}://${client.id}@${inbound.listen || '185.148.13.75'}:${inbound.port}`;
+    let link = `${inbound.protocol}://${client.id}@${inbound.domain || '127.0.0.1'}:${inbound.port}`;
     
     // 添加参数
     const params = new URLSearchParams();

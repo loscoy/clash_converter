@@ -136,9 +136,24 @@ export class AuthService {
             },
           });
 
-          allInbounds.push(...retryResponse.data.obj || []);
+          const url = new URL(serverConfig.apiUrl);
+          const domain = url.hostname;
+
+          const obj = {
+            ...retryResponse.data.obj,
+            'domain': domain
+          }
+
+          allInbounds.push(...obj || []);
         } else {
-          allInbounds.push(...response.data.obj || []);
+          const url = new URL(serverConfig.apiUrl);
+          const domain = url.hostname;
+
+          const obj = {
+            ...response.data.obj,
+            'domain': domain
+          }
+          allInbounds.push(...obj || []);
         }
       } catch (error) {
         console.error(`获取服务器 ${serverConfig.apiUrl} 节点列表失败:`, error);
