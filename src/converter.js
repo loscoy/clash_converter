@@ -291,7 +291,7 @@ function parseVlessLink(link, index) {
       return null;
   }
 }
-const templatePath = path.join(__dirname, './templates/template.yaml');
+const templatePath = path.join(__dirname, '../templates/template.yaml');
 const template = fs.readFileSync(templatePath, 'utf8');
 
 

@@ -26,7 +26,7 @@ interface ClashConfig {
 }
 
 export class ConverterService {
-  private static readonly templatePath = path.join(__dirname, '../templates/template.yaml');
+  private static readonly templatePath = path.join(__dirname, '../../templates/template.yaml');
 
   public static generateVlessLink(inbound: any): string {
     const settings = JSON.parse(inbound.settings);
