@@ -40,7 +40,7 @@ export class ConverterService {
         return null;
       }
     } else {
-      client = settings.clients[0];
+      throw new Error('未找到用户');
     }
     
     // 使用 inbound.domain 或 inbound.listen，如果都没有则抛出错误
