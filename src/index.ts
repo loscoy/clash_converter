@@ -34,10 +34,13 @@ app.get('/clash', async (req, res) => {
     res.setHeader('Subscription-Userinfo', ConverterService.generateSubscriptionUserInfo(userInfo));
     res.setHeader('Content-Type', 'text/yaml');
     
+    // 从查询参数获取email
+    const email = req.query.email as string | undefined;
+    
     // 生成所有节点的 VLESS 链接
     const vlessLinks = allInbounds.map(inbound => 
-      ConverterService.generateVlessLink(inbound)
-    );
+      ConverterService.generateVlessLink(inbound, email)
+    ).filter(e => e != null);
     
     // 生成 Clash 配置
     const clashConfig = ConverterService.convertV2RayToClashProxiesYAML(vlessLinks);
@@ -52,4 +55,4 @@ app.get('/clash', async (req, res) => {
 
 app.listen(port, () => {
   console.log(`服务器运行在 ${port}`);
-}); 
+});

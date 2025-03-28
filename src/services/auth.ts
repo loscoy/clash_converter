@@ -117,7 +117,6 @@ export class AuthService {
 
         const url = new URL(serverConfig.apiUrl);
         const domain = url.hostname;
-        const obj = response.data.obj;
 
         if (response.data && response.data.success === false && response.data.msg === '登录时效已过，请重新登录') {
           console.log(`服务器 ${serverConfig.apiUrl} 登录已过期，尝试重新登录...`);
@@ -140,7 +139,7 @@ export class AuthService {
             },
           });
 
-          // 确保 retryResponse.data 是数组
+          const obj = retryResponse.data.obj;
           const inboundData = Array.isArray(obj) ? obj : [];
           
           // 为每个入站配置添加域名
@@ -151,7 +150,7 @@ export class AuthService {
 
           allInbounds.push(...inboundsWithDomain);
         } else {
-          // 确保 retryResponse.data 是数组
+          const obj = response.data.obj;
           const inboundData = Array.isArray(obj) ? obj : [];
           
           // 为每个入站配置添加域名

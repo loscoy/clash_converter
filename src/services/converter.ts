@@ -28,10 +28,20 @@ interface ClashConfig {
 export class ConverterService {
   private static readonly templatePath = path.join(__dirname, '../../templates/template.yaml');
 
-  public static generateVlessLink(inbound: any): string {
+  public static generateVlessLink(inbound: any, email?: string): string | null {
     const settings = JSON.parse(inbound.settings);
     const streamSettings = JSON.parse(inbound.streamSettings);
-    const client = settings.clients[0];
+    
+    // 根据email参数匹配client
+    let client = null;
+    if (email) {
+      client = settings.clients.find((c: any) => c.email === email);
+      if (!client) {
+        return null;
+      }
+    } else {
+      client = settings.clients[0];
+    }
     
     // 使用 inbound.domain 或 inbound.listen，如果都没有则抛出错误
     const serverAddress = inbound.domain;
@@ -290,4 +300,4 @@ export class ConverterService {
   public static generateSubscriptionUserInfo(userInfo: SubscriptionUserInfo): string {
     return `upload=${userInfo.upload}; download=${userInfo.download}; total=${userInfo.total}; expire=${userInfo.expire}`;
   }
-} 
+}
