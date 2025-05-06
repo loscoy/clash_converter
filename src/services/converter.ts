@@ -132,6 +132,7 @@ export class ConverterService {
 
     // 添加安全设置
     if (streamSettings.security === "tls") {
+      params.append("security", "tls");
       params.append("tls", "1");
       params.append("sni", streamSettings.tlsSettings.serverName);
     }
