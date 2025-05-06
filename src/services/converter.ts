@@ -148,78 +148,75 @@ export class ConverterService {
   }
 
   private static parseVmessLink(link: string, index: number): Proxy | null {
-    const encodedData = link.substring('vmess://'.length);
-    let decodedString: string;
-    try {
-      const base64String = encodedData.replace(/-/g, '+').replace(/_/g, '/');
-      decodedString = atob(base64String);
-    } catch (e) {
-      console.error(`无法解码 Base64: ${encodedData.substring(0, 20)}...`, e);
-      return null;
-    }
-
-    let vmessConfig: any;
-    try {
-      vmessConfig = JSON.parse(decodedString);
-    } catch (e) {
-      console.error(`无法解析 JSON: ${decodedString.substring(0, 50)}...`, e);
-      return null;
-    }
-
-    if (!vmessConfig.add || !vmessConfig.port || !vmessConfig.id) {
-      console.warn(`跳过不完整的 VMess 配置: ${JSON.stringify(vmessConfig)}`);
-      return null;
-    }
-
-    const proxy: Proxy = {
-      name: decodeURIComponent(vmessConfig.ps || `vmess_${index + 1}`),
-      type: 'vmess',
-      server: vmessConfig.add,
-      port: parseInt(vmessConfig.port, 10),
-      uuid: vmessConfig.id,
-      alterId: parseInt(vmessConfig.aid || '0', 10),
-      cipher: vmessConfig.scy || vmessConfig.security || 'auto',
-      udp: true,
-      tls: vmessConfig.tls === 'tls',
-      'skip-cert-verify': vmessConfig.skipcert === 'true' || vmessConfig.allowInsecure === true,
-      servername: vmessConfig.sni || (vmessConfig.tls === 'tls' ? vmessConfig.host || vmessConfig.add : undefined),
-      network: vmessConfig.net || 'tcp',
-    };
-
-    if (proxy.network === 'ws') {
-      proxy['ws-opts'] = {
-        path: vmessConfig.path || '/',
-        headers: {
-          Host: vmessConfig.host || proxy.server
+    const vmessData = link.substring('vmess://'.length);
+    
+    // 检查是否是新的VEss格式 (包含@符号)
+    if (vmessData.includes('@')) {
+      // 新格式: vmess://uuid@host:port?type=ws#remark
+      const parts = vmessData.split('@');
+      const uuid = parts[0];
+      const rest = parts[1].split('?');
+      const hostPort = rest[0].split(':');
+      const host = hostPort[0];
+      const port = parseInt(hostPort[1]);
+      const query = rest.length > 1 ? rest[1] : '';
+      const remark = link.includes('#') ? link.split('#')[1] : `vmess-${index}`;
+      
+      return {
+        name: remark,
+        type: 'vmess',
+        server: host,
+        port: port,
+        uuid: uuid,
+        alterId: 0,
+        cipher: 'auto',
+        tls: port === 443,
+        network: query.includes('type=ws') ? 'ws' : 'tcp',
+        'ws-opts': {
+          path: query.includes('path=') ? query.split('path=')[1].split('&')[0] : '/',
+          headers: {}
         }
       };
-    }
-
-    if (proxy.network === 'h2') {
-      proxy['h2-opts'] = {
-        host: [vmessConfig.host || proxy.server],
-        path: vmessConfig.path || '/'
-      };
-    }
-
-    if (proxy.network === 'grpc') {
-      proxy['grpc-opts'] = {
-        'grpc-service-name': vmessConfig.path || vmessConfig.serviceName || ''
-      };
-    }
-
-    if (!proxy.tls) {
-      delete proxy.servername;
-      delete proxy['skip-cert-verify'];
     } else {
-      if (!proxy.servername) proxy.servername = proxy.server;
+      // 旧格式: base64编码的JSON
+      let decodedString: string;
+      try {
+        const base64String = vmessData.replace(/-/g, '+').replace(/_/g, '/');
+        decodedString = atob(base64String);
+      } catch (e) {
+        console.error(`无法解码 Base64: ${vmessData.substring(0, 20)}...`, e);
+        return null;
+      }
+
+      let vmessConfig: any;
+      try {
+        vmessConfig = JSON.parse(decodedString);
+      } catch (e) {
+        console.error(`无法解析 JSON: ${decodedString.substring(0, 50)}...`, e);
+        return null;
+      }
+
+      if (!vmessConfig.add || !vmessConfig.port || !vmessConfig.id) {
+        console.warn(`跳过不完整的 VMess 配置: ${JSON.stringify(vmessConfig)}`);
+        return null;
+      }
+
+      return {
+        name: vmessConfig.ps || `vmess-${index}`,
+        type: 'vmess',
+        server: vmessConfig.add,
+        port: vmessConfig.port,
+        uuid: vmessConfig.id,
+        alterId: vmessConfig.aid || 0,
+        cipher: vmessConfig.type || 'auto',
+        tls: vmessConfig.tls === 'tls',
+        network: vmessConfig.net || 'tcp',
+        'ws-opts': vmessConfig.net === 'ws' ? {
+          path: vmessConfig.path || '/',
+          headers: vmessConfig.host ? { Host: vmessConfig.host } : {}
+        } : undefined
+      };
     }
-
-    if (proxy['ws-opts'] && !proxy['ws-opts'].path && (!proxy['ws-opts'].headers || !proxy['ws-opts'].headers.Host)) delete proxy['ws-opts'];
-    if (proxy['h2-opts'] && (!proxy['h2-opts'].path || !proxy['h2-opts'].host || proxy['h2-opts'].host.length === 0)) delete proxy['h2-opts'];
-    if (proxy['grpc-opts'] && !proxy['grpc-opts']['grpc-service-name']) delete proxy['grpc-opts'];
-
-    return proxy;
   }
 
   private static parseVlessLink(link: string, index: number): Proxy | null {
