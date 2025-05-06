@@ -245,6 +245,7 @@ export class ConverterService {
         server: url.hostname,
         port: parseInt(url.port, 10),
         uuid: url.username,
+        alterId: params.get("aid") ? parseInt(params.get("aid")!, 10) : 0,
         udp: true,
         tls: params.get("security") === "tls" || params.get("security") === "reality",
         "skip-cert-verify":
