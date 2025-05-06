@@ -128,7 +128,7 @@ export class ConverterService {
     params.append("aid", client.alterId || "0");
 
     // 添加cipher
-    params.append("cipher", client.cipher || "");
+    params.append("cipher", streamSettings.tlsSettings.cipherSuites || "");
 
     // 添加安全设置
     if (streamSettings.security === "tls") {
@@ -249,8 +249,8 @@ export class ConverterService {
         server: url.hostname,
         port: parseInt(url.port, 10),
         uuid: url.username,
-        cipher: params.get("cipher") ? params.get("cipher")! : undefined,
-        alterId: params.get("aid") ? parseInt(params.get("aid")!, 10) : undefined,
+        cipher: params.get("cipher") || "",
+        alterId: parseInt(params.get("aid") || "0", 10),
         udp: true,
         tls: params.get("security") === "tls" || params.get("security") === "reality",
         "skip-cert-verify":
@@ -265,10 +265,6 @@ export class ConverterService {
       };
 
       if (!proxy.flow) delete proxy.flow;
-
-      if (proxy.alterId === undefined) delete proxy.alterId;
-
-      if (proxy.cipher === undefined) delete proxy.cipher;
 
       if (proxy.network === "ws") {
         proxy["ws-opts"] = {
