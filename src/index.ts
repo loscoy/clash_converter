@@ -37,13 +37,21 @@ app.get('/clash', async (req, res) => {
     // 从查询参数获取email
     const email = req.query.email as string | undefined;
     
-    // 生成所有节点的 VLESS 链接
-    const vlessLinks = allInbounds.map(inbound => 
-      ConverterService.generateVlessLink(inbound, email)
-    ).filter(e => e != null);
+    // 生成所有节点的链接(支持VLESS和VMESS)
+    const v2rayLinks = allInbounds.map(inbound => {
+      switch (inbound.protocol) {
+        case 'vless':
+          return ConverterService.generateVlessLink(inbound, email);
+        case 'vmess':
+          return ConverterService.generateVmessLink(inbound, email);
+        default:
+          console.warn(`不支持的协议: ${inbound.protocol}`);
+          return null;
+      }
+    }).filter(e => e != null);
     
     // 生成 Clash 配置
-    const clashConfig = ConverterService.convertV2RayToClashProxiesYAML(vlessLinks);
+    const clashConfig = ConverterService.convertV2RayToClashProxiesYAML(v2rayLinks);
     
     // 发送响应
     res.send(clashConfig);
