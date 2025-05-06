@@ -245,7 +245,7 @@ export class ConverterService {
         server: url.hostname,
         port: parseInt(url.port, 10),
         uuid: url.username,
-        alterId: params.get("aid") ? parseInt(params.get("aid")!, 10) : 0,
+        alterId: params.get("aid") ? parseInt(params.get("aid")!, 10) : undefined,
         udp: true,
         tls: params.get("security") === "tls" || params.get("security") === "reality",
         "skip-cert-verify":
@@ -260,6 +260,8 @@ export class ConverterService {
       };
 
       if (!proxy.flow) delete proxy.flow;
+
+      if (proxy.alterId === undefined) delete proxy.alterId;
 
       if (proxy.network === "ws") {
         proxy["ws-opts"] = {
@@ -301,6 +303,8 @@ export class ConverterService {
           proxy["reality-opts"] = realityOpts;
         }
       }
+
+      console.log(proxy);
 
       return proxy;
     } catch (error) {
