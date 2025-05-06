@@ -129,7 +129,7 @@ export class ConverterService {
       // 替换 proxies
       config.proxies = proxies;
       // add proxies to proxy-groups - 选择节点 - proxies
-      config['proxy-groups'].push({
+      config['proxy-groups'].unshift({
           name: "🔰 选择节点",
           type: "select",
           proxies: proxies.map(proxy => proxy.name)
