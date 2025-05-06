@@ -248,7 +248,7 @@ export class ConverterService {
         server: url.hostname,
         port: parseInt(url.port, 10),
         uuid: url.username,
-        cipherSuites: params.get("cipher") ? params.get("cipher")! : undefined,
+        cipher: params.get("cipher") ? params.get("cipher")! : undefined,
         alterId: params.get("aid") ? parseInt(params.get("aid")!, 10) : undefined,
         udp: true,
         tls: params.get("security") === "tls" || params.get("security") === "reality",
@@ -267,7 +267,7 @@ export class ConverterService {
 
       if (proxy.alterId === undefined) delete proxy.alterId;
 
-      if (proxy.cipherSuites === undefined) delete proxy.cipherSuites;
+      if (proxy.cipher === undefined) delete proxy.cipher;
 
       if (proxy.network === "ws") {
         proxy["ws-opts"] = {
