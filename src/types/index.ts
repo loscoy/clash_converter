@@ -50,7 +50,7 @@ export interface Proxy {
   port: number;
   uuid: string;
   alterId?: number;
-  cipher?: string;
+  cipherSuites?: string;
   udp?: boolean;
   tls?: boolean;
   'skip-cert-verify'?: boolean;
