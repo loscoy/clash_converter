@@ -10,6 +10,11 @@ const port = process.env.PORT || 6060;
 
 app.use(cors());
 
+// 健康检查路由，用于Render监控
+app.get('/', (req, res) => {
+  res.status(200).json({ status: 'ok', message: 'Clash Converter API is running' });
+});
+
 app.get('/clash', async (req, res) => {
   try {
     // 从所有服务器获取节点数据
