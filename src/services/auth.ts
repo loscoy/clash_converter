@@ -25,7 +25,12 @@ function getServerConfigs(): ServerConfig[] {
   }
   
   if (configs.length === 0) {
-    throw new Error('请在 .env 文件中设置至少一个服务器的配置');
+    const isRender = process.env.RENDER === 'true';
+    if (isRender) {
+      throw new Error('未找到服务器配置。请在Render控制台的Environment部分添加XUI_USER_1、PASSWORD_1和XUI_API_URL_1环境变量');
+    } else {
+      throw new Error('请在 .env 文件中设置至少一个服务器的配置');
+    }
   }
   
   return configs;
