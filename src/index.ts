@@ -19,29 +19,39 @@ app.get('/clash', async (req, res) => {
   try {
     // 从所有服务器获取节点数据
     const allInbounds = await AuthService.getInboundList();
-    
+
     if (!allInbounds || allInbounds.length === 0) {
       return res.status(404).json({ error: '未找到有效的节点数据' });
     }
 
-    // 获取第一个节点的 clientInfo
-    const clientInfo = allInbounds[0].clientInfo[0];
-    
-    // 生成 Subscription-UserInfo header
+    // 统计所有节点的流量信息
+    let totalUpload = 0;
+    let totalDownload = 0;
+
+    allInbounds.forEach(inbound => {
+      if (inbound.clientInfo && Array.isArray(inbound.clientInfo)) {
+        inbound.clientInfo.forEach((client: any) => {
+          totalUpload += client.up || 0;
+          totalDownload += client.down || 0;
+        });
+      }
+    });
+
+    // 生成 Subscription-UserInfo header (只包含流量信息)
     const userInfo: SubscriptionUserInfo = {
-      upload: clientInfo.up,
-      download: clientInfo.down,
-      total: clientInfo.total,
-      expire: Math.floor(clientInfo.expiryTime / 1000)
+      upload: totalUpload,
+      download: totalDownload,
+      total: 0, // 不再使用总流量限制
+      expire: 0 // 不再使用过期时间
     };
-    
+
     // 设置响应头
     res.setHeader('Subscription-Userinfo', ConverterService.generateSubscriptionUserInfo(userInfo));
     res.setHeader('Content-Type', 'text/yaml');
-    
+
     // 从查询参数获取email
     const email = req.query.email as string | undefined;
-    
+
     // 生成所有节点的链接(支持VLESS和VMESS)
     const v2rayLinks = allInbounds.map(inbound => {
       switch (inbound.protocol) {
@@ -54,10 +64,10 @@ app.get('/clash', async (req, res) => {
           return null;
       }
     }).filter(e => e != null);
-    
+
     // 生成 Clash 配置
     const clashConfig = ConverterService.convertV2RayToClashProxiesYAML(v2rayLinks);
-    
+
     // 发送响应
     res.send(clashConfig);
   } catch (error) {
