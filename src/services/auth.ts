@@ -9,25 +9,63 @@ interface ServerConfig {
 
 function getServerConfigs(): ServerConfig[] {
   const configs: ServerConfig[] = [];
-  let index = 1;
   
-  while (true) {
-    const user = process.env[`XUI_USER_${index}`];
-    const password = process.env[`PASSWORD_${index}`];
-    const apiUrl = process.env[`XUI_API_URL_${index}`];
-    
-    if (!user || !password || !apiUrl) {
-      break;
+  // Check if common credentials are provided
+  const commonUser = process.env.XUI_USER;
+  const commonPassword = process.env.PASSWORD;
+  
+  // 尝试从环境变量中获取 API URL 数组
+  const apiUrlsEnv = process.env.XUI_API_URLS;
+  
+  if (apiUrlsEnv) {
+    try {
+      // 解析 JSON 格式的 API URL 数组
+      const apiUrls: string[] = JSON.parse(apiUrlsEnv);
+      
+      for (const apiUrl of apiUrls) {
+        if (!apiUrl) continue;
+        
+        // 所有 URL 使用相同的用户名和密码
+        if (!commonUser || !commonPassword) {
+          console.warn(`跳过服务器 ${apiUrl}: 未找到有效的用户名或密码配置`);
+          continue;
+        }
+        
+        configs.push({ user: commonUser, password: commonPassword, apiUrl });
+      }
+    } catch (error) {
+      console.error('解析 XUI_API_URLS 环境变量失败:', error);
     }
-    
-    configs.push({ user, password, apiUrl });
-    index++;
+  }
+  
+  // 如果没有通过数组配置，则回退到原来的方式
+  if (configs.length === 0) {
+    let index = 1;
+    while (true) {
+      const apiUrl = process.env[`XUI_API_URL_${index}`];
+      if (!apiUrl) {
+        break;
+      }
+      
+      // Use specific credentials if available, otherwise use common credentials
+      const user = process.env[`XUI_USER_${index}`] || commonUser;
+      const password = process.env[`PASSWORD_${index}`] || commonPassword;
+      
+      if (!user || !password) {
+        console.warn(`跳过服务器 ${apiUrl}: 未找到有效的用户名或密码配置`);
+        index++;
+        continue;
+      }
+      
+      configs.push({ user, password, apiUrl });
+      index++;
+    }
   }
   
   if (configs.length === 0) {
     const isRender = process.env.RENDER === 'true';
     if (isRender) {
-      throw new Error('未找到服务器配置。请在Render控制台的Environment部分添加XUI_USER_1、PASSWORD_1和XUI_API_URL_1环境变量');
+      throw new Error('未找到服务器配置。请在Render控制台的Environment部分添加XUI_USER、PASSWORD和XUI_API_URLS(JSON数组)环境变量，或使用XUI_USER_1、PASSWORD_1和XUI_API_URL_1格式');
     } else {
       throw new Error('请在 .env 文件中设置至少一个服务器的配置');
     }
